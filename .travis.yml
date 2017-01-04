@@ -1,0 +1,12 @@
+language: clojure
+jdk:
+  - oraclejdk8
+
+env:
+  global:
+      - AWS_ACCESS_KEY_ID=xxxxxxxxxxxx
+      - AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxx
+      - AWS_CBOR_DISABLE=1
+
+script:
+  - lein test
