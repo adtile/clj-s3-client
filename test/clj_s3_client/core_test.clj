@@ -19,14 +19,15 @@
     (let [input-stream (sample-txt)
           content-length 7
           content-type "text/plain"
-          object-key object-key]
-      (put-object client bucket-name object-key input-stream {:content-type content-type :content-length content-length :custom-header "cats"})
+          content-encoding "gzip"]
+      (put-object client bucket-name object-key input-stream {:content-type content-type :content-length content-length :custom-header "cats" :content-encoding content-encoding})
       (is (equal? (get-object client bucket-name object-key)
                   {:accept-ranges "bytes"
                    :bucket-name bucket-name
                    :content #(= "lolbal\n" (slurp %1))
                    :content-length 7
                    :content-type "text/plain"
+                   :content-encoding content-encoding
                    :e-tag string?
                    :custom-header "cats"
                    :last-modified #(instance? java.util.Date %1)

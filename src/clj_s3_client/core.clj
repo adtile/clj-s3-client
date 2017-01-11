@@ -41,7 +41,7 @@
         supported {:content-length (fn [ob value] (doto ob (.setContentLength value)))
                    :content-type (fn [ob value] (doto ob (.setContentType value)))
                    :content-language (fn [ob value] (doto ob (.setContentLanguage value)))
-                   :content-encoding (fn [ob value] (doto (.setContentEncoding value)))
+                   :content-encoding (fn [ob value] (doto ob (.setContentEncoding value)))
                    :content-disposition (fn [ob value] (doto ob (.setContentDisposition value)))
                    :http-expires-date (fn [ob value] (doto ob (.setHttpExpiresDate value)))}
         specific-setters (select-keys supported (keys metadata))
