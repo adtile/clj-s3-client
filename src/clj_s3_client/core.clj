@@ -100,8 +100,8 @@
   [^AmazonS3Client client bucket-name]
   (.deleteBucket client bucket-name))
 
-(defn exists?-bucket
-  "## (exists?-bucket client \"my-awesome-bucket\")
+(defn bucket-exists?
+  "## (bucket-exists? client \"my-awesome-bucket\")
 
   Checks if bucket `bucket-name` exists.
 
