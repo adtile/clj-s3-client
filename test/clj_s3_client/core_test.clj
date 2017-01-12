@@ -32,7 +32,8 @@
 
 (deftest move-object-around
   (testing "store file to s3 with public permission"
-    (let [input-stream (sample-txt)]
+    (let [input-stream (sample-txt)
+          url "https://adtile-ci-aws-sandbox-development.s3.amazonaws.com/clj-s3-client/store-file-to-s3.txt"]
       (put-object client bucket-name object-key input-stream (->metadata))
       (is (equal? (get-object client bucket-name object-key)
                   {:accept-ranges "bytes"
@@ -45,9 +46,12 @@
                    :custom-header "cats"
                    :last-modified #(instance? java.util.Date %1)
                    :object-key object-key}))
-      (is (= (file->status client bucket-name object-key) 200))))
+      (is (= (url->bucket-name-and-object-key url) {:bucket-name bucket-name :object-key object-key}))
+      (is (= (bucket-name-and-object-key->url client bucket-name object-key) url))
+      (is (= (file->status client bucket-name object-key) 200)))
   (testing "store file to s3 with private permission"
-    (let [input-stream (sample-txt)]
+    (let [input-stream (sample-txt)
+          url "https://adtile-ci-aws-sandbox-development.s3.amazonaws.com/clj-s3-client/store-file-to-s3.txt"]
       (put-object client bucket-name object-key input-stream (->metadata :custom-header "dogs" :acl :private))
       (is (equal? (get-object client bucket-name object-key)
                   {:accept-ranges "bytes"
@@ -60,5 +64,7 @@
                    :custom-header "dogs"
                    :last-modified #(instance? java.util.Date %1)
                    :object-key object-key}))
-      (is (= (file->status client bucket-name object-key) 403)))))
+      (is (= (url->bucket-name-and-object-key url) {:bucket-name bucket-name :object-key object-key}))
+      (is (= (bucket-name-and-object-key->url client bucket-name object-key) url))
+      (is (= (file->status client bucket-name object-key) 403))))))
 

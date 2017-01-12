@@ -6,7 +6,7 @@
   (:require [camel-snake-kebab.core :refer [->kebab-case-keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [clojure.set :refer [difference]])
-  (:import [com.amazonaws.services.s3 AmazonS3Client]
+  (:import [com.amazonaws.services.s3 AmazonS3Client AmazonS3URI]
            [com.amazonaws.services.s3.model CannedAccessControlList PutObjectRequest AmazonS3Exception ObjectMetadata]
            [com.amazonaws ClientConfiguration]
            [com.amazonaws.regions Regions]
@@ -174,4 +174,14 @@
   "
   [^AmazonS3Client client bucket-name object-key]
   (.deleteObject client bucket-name object-key))
+
+(defn bucket-name-and-object-key->url [^AmazonS3Client client bucket-name object-key]
+  (str (.getUrl client bucket-name object-key)))
+
+(defn url->bucket-name-and-object-key [url]
+  (let [s3-uri (AmazonS3URI. url true)
+        bucket-name (.getBucket s3-uri)
+        object-key (.getKey s3-uri)]
+    {:bucket-name bucket-name
+     :object-key object-key}))
 
