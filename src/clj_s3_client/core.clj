@@ -2,11 +2,13 @@
   "Functions to interact with Amazon S3 storage.
 
   All functions take AmazonS3Client instance as the first parameter.
+
+  Exception: `url->bucket-name-and-object-key`
   "
   (:require [camel-snake-kebab.core :refer [->kebab-case-keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [clojure.set :refer [difference]])
-  (:import [com.amazonaws.services.s3 AmazonS3Client]
+  (:import [com.amazonaws.services.s3 AmazonS3Client AmazonS3URI]
            [com.amazonaws.services.s3.model CannedAccessControlList PutObjectRequest AmazonS3Exception ObjectMetadata]
            [com.amazonaws ClientConfiguration]
            [com.amazonaws.regions Regions]
@@ -98,13 +100,14 @@
   [^AmazonS3Client client bucket-name]
   (.deleteBucket client bucket-name))
 
-(defn exists?-bucket [^AmazonS3Client client bucket-name]
+(defn exists?-bucket
   "## (exists?-bucket client \"my-awesome-bucket\")
 
   Checks if bucket `bucket-name` exists.
 
   Returns `true` or `false`.
   "
+  [^AmazonS3Client client bucket-name]
   (.doesBucketExist client bucket-name))
 
 (defn put-object
@@ -174,4 +177,28 @@
   "
   [^AmazonS3Client client bucket-name object-key]
   (.deleteObject client bucket-name object-key))
+
+(defn bucket-name-and-object-key->url
+  "## (bucket-name-and-object-key->url client \"my-awesome-bucket\" \"my-awesome-me.txt\")
+
+  Returns the corresponding url of `bucket-name` and `object-key` as a string.
+
+  However, depending on the permissions it might or might not work.
+
+  "
+  [^AmazonS3Client client bucket-name object-key]
+  (str (.getUrl client bucket-name object-key)))
+
+(defn url->bucket-name-and-object-key
+  "## (url->bucketname-and-object-key \"my-awesome-bucket\" \"my-awesome-me.txt\")
+
+  Returns the bucket-name and object-key of `url` as a map.
+
+  "
+  [url]
+  (let [s3-uri (AmazonS3URI. url true)
+        bucket-name (.getBucket s3-uri)
+        object-key (.getKey s3-uri)]
+    {:bucket-name bucket-name
+     :object-key object-key}))
 
