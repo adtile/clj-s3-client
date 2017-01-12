@@ -67,8 +67,8 @@
         acl (:acl options)
         s3-object-metadata (map->object-metadata metadata)
         put-object-req (.withCannedAcl
-                          (PutObjectRequest. bucket-name object-key is s3-object-metadata)
-                          (acl->access-control-list acl))
+                         (PutObjectRequest. bucket-name object-key is s3-object-metadata)
+                         (acl->access-control-list acl))
         put-object-resp (.putObject client put-object-req)
         result-s3-object-metadata (object-metadata->map (.getMetadata put-object-resp))]
     (assoc result-s3-object-metadata :object-key object-key :bucket-name bucket-name :content is)))
