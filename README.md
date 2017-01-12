@@ -5,6 +5,8 @@
 
 A minimalistic Clojure wrapper for AWS s3 client.
 
+[Documentation](docs/uberdoc.html)
+
 ## Usage
 
 ```clojure
@@ -32,7 +34,12 @@ A minimalistic Clojure wrapper for AWS s3 client.
 
 ```bash
 
+# Release to clojars
 lein deploy clojars
+# Generate docs
+lein marg
+# Push to github.
+
 
 ```
 
