@@ -1,4 +1,8 @@
 (ns clj-s3-client.core
+  "Functions to interact with Amazon S3 storage.
+
+  All functions take AmazonS3Client instance as first parameter.
+  "
   (:require [camel-snake-kebab.core :refer [->kebab-case-keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [clojure.set :refer [difference]])
@@ -18,28 +22,6 @@
         :bucket-owner-read CannedAccessControlList/BucketOwnerRead
         :bucket-owner-full-control CannedAccessControlList/BucketOwnerFullControl
         :log-delivery-write CannedAccessControlList/LogDeliveryWrite} acl CannedAccessControlList/Private))
-
-(defn create-client [& {:keys [max-connections max-error-retry endpoint region tcp-keep-alive]
-                        :or {max-connections 50 max-error-retry 1 tcp-keep-alive false}}]
-  (let [configuration (-> (ClientConfiguration.)
-                          (.withMaxErrorRetry max-error-retry)
-                          (.withMaxConnections max-connections)
-                          (.withTcpKeepAlive tcp-keep-alive))
-        client (AmazonS3Client. configuration)]
-    (when endpoint
-      (.setEndpoint client endpoint))
-    (if region
-      (.withRegion client (Regions/fromName region))
-      client)))
-
-(defn create-bucket [^AmazonS3Client client bucket-name]
-  (.createBucket client bucket-name))
-
-(defn delete-bucket [^AmazonS3Client client bucket-name]
-  (.deleteBucket client bucket-name))
-
-(defn exists?-bucket [^AmazonS3Client client bucket-name]
-  (.doesBucketExist client bucket-name))
 
 (defn- object-metadata->map [^ObjectMetadata s3-object-metadata]
   (let [s3-object-raw-metadata (into {} (.getRawMetadata s3-object-metadata))
@@ -62,7 +44,103 @@
       object-metadata
       (conj specific-setters user-metadata-setter))))
 
-(defn put-object [^AmazonS3Client client bucket-name object-key ^InputStream is options]
+(defn- suppress-not-found-exception [exception]
+  (when-not (= 404 (.getStatusCode exception))
+    (throw exception)))
+
+(defn create-client
+  "## (create-client)
+
+  Returns instance of AmazonS3Client which can be used with all other functions to access S3 resources.
+
+  An optional map of options can include any of the following keys:
+
+    :max-connections    - the max number of active connections for client.
+                          Defaults to 50.
+
+    :max-error-retry    - the number of retries to try before failing of http action.
+                          Defaults to 1.
+
+    :endpoint           - the endpoint which client will use.
+
+    :region             - the region which client will use.
+
+    :tcp-keep-alive     - set the keep connection alive flag for http connections.
+                          Defaults to false.
+
+  "
+  [& {:keys [max-connections max-error-retry endpoint region tcp-keep-alive]
+                        :or {max-connections 50 max-error-retry 1 tcp-keep-alive false}}]
+  (let [configuration (-> (ClientConfiguration.)
+                          (.withMaxErrorRetry max-error-retry)
+                          (.withMaxConnections max-connections)
+                          (.withTcpKeepAlive tcp-keep-alive))
+        client (AmazonS3Client. configuration)]
+    (when endpoint
+      (.setEndpoint client endpoint))
+    (if region
+      (.withRegion client (Regions/fromName region))
+      client)))
+
+(defn create-bucket
+  "## (create-bucket client \"my-awesome-bucket\")
+
+  Creates bucket by given name.
+  "
+  [^AmazonS3Client client bucket-name]
+  (.createBucket client bucket-name))
+
+(defn delete-bucket
+  "## (delete-bucket client \"my-not-so-awesome-bucket\")
+
+  Delete bucket by given name.
+  "
+  [^AmazonS3Client client bucket-name]
+  (.deleteBucket client bucket-name))
+
+(defn exists?-bucket [^AmazonS3Client client bucket-name]
+  "## (exists?-bucket client \"my-awesome-bucket\")
+
+  Checks if bucket exists.
+
+  Returns true or false
+  "
+  (.doesBucketExist client bucket-name))
+
+(defn put-object
+  "## (put-object client \"my-awesome-bucket\" \"my-awesome-me.txt\" file-input-stream {:acl :private :content-length 1234 :content-type \"text/html\"})
+
+  Store the input stream to s3 with given options.
+
+  An optional map of options can include any of the following keys:
+
+    :acl                    - sets access rights of the file, supported values are
+                                :private
+                                :public-read
+                                :public-read-write
+                                :aws-exec-read
+                                :authenticated-read
+                                :bucket-owner-read
+                                :bucket-owner-full-control
+                                :log-delivery-write
+
+    :content-length         - the length of the content in bytes.
+
+    :content-type           - the mime type of the content (e.g \"image/png\").
+
+    :content-language       - content language of the InputStream (e.g \"en\").
+
+    :content-encoding       - the encoding of the content (e.g. gzip).
+
+    :content-disposition    - how the content should be downloaded by browsers (e.g. attachment; filename=\"filename.jpg\").
+
+    :http-expires-date      - when the content expires, used in cache headers (e.g. Sun, 7 May 1995 12:45:26 GMT).
+
+
+  map can also contain other keys which are added as custom headers for the file.
+
+  "
+  [^AmazonS3Client client bucket-name object-key ^InputStream is options]
   (let [metadata (dissoc options :acl)
         acl (:acl options)
         s3-object-metadata (map->object-metadata metadata)
@@ -73,17 +151,27 @@
         result-s3-object-metadata (object-metadata->map (.getMetadata put-object-resp))]
     (assoc result-s3-object-metadata :object-key object-key :bucket-name bucket-name :content is)))
 
-(defn- suppress-not-found-exception [exception]
-  (when-not (= 404 (.getStatusCode exception))
-    (throw exception)))
+(defn get-object
+  "## (get-object client \"my-awesome-bucket\" \"my-awesome-me.txt\")
 
-(defn get-object [^AmazonS3Client client bucket-name object-key]
+  Fetch object from given bucket with the key, which contains object metadata and an InputStream.
+
+  If not found returns nil.
+
+  "
+  [^AmazonS3Client client bucket-name object-key]
   (try
     (let [s3-object (.getObject client bucket-name object-key)
           s3-object-metadata (object-metadata->map (.getObjectMetadata s3-object))]
       (assoc s3-object-metadata :object-key (.getKey s3-object) :bucket-name (.getBucketName s3-object) :content (.getObjectContent s3-object)))
     (catch AmazonS3Exception e (suppress-not-found-exception e))))
 
-(defn delete-object [^AmazonS3Client client bucket-name object-key]
+(defn delete-object
+  "## (delete-object client \"my-awesome-bucket\" \"my-awesome-me.txt\")
+
+  Destroys object from given bucket with the key.
+
+  "
+  [^AmazonS3Client client bucket-name object-key]
   (.deleteObject client bucket-name object-key))
 
