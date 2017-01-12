@@ -5,7 +5,7 @@
 
 A minimalistic Clojure wrapper for AWS s3 client.
 
-[Documentation](docs/uberdoc.html)
+[Documentation](https://rawgit.com/adtile/clj-s3-client/master/docs/uberdoc.html "Documentation")
 
 ## Usage
 
