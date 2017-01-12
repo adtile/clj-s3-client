@@ -1,7 +1,7 @@
 (ns clj-s3-client.core
   "Functions to interact with Amazon S3 storage.
 
-  All functions take AmazonS3Client instance as first parameter.
+  All functions take AmazonS3Client instance as the first parameter.
   "
   (:require [camel-snake-kebab.core :refer [->kebab-case-keyword]]
             [camel-snake-kebab.extras :refer [transform-keys]]
@@ -51,21 +51,21 @@
 (defn create-client
   "## (create-client)
 
-  Returns instance of AmazonS3Client which can be used with all other functions to access S3 resources.
+  Returns an instance of AmazonS3Client which can be used with all other functions to access S3 resources.
 
   An optional map of options can include any of the following keys:
 
     :max-connections    - the max number of active connections for client.
                           Defaults to 50.
 
-    :max-error-retry    - the number of retries to try before failing of http action.
+    :max-error-retry    - the number of retries before failing.
                           Defaults to 1.
 
-    :endpoint           - the endpoint which client will use.
+    :endpoint           - the endpoint to connect to.
 
-    :region             - the region which client will use.
+    :region             - the region to be used.
 
-    :tcp-keep-alive     - set the keep connection alive flag for http connections.
+    :tcp-keep-alive     - set the 'keep connection alive' boolean flag for http connections.
                           Defaults to false.
 
   "
@@ -85,7 +85,7 @@
 (defn create-bucket
   "## (create-bucket client \"my-awesome-bucket\")
 
-  Creates bucket by given name.
+  Creates a bucket `bucket-name`.
   "
   [^AmazonS3Client client bucket-name]
   (.createBucket client bucket-name))
@@ -93,7 +93,7 @@
 (defn delete-bucket
   "## (delete-bucket client \"my-not-so-awesome-bucket\")
 
-  Delete bucket by given name.
+  Deletes the bucket `bucket-name`.
   "
   [^AmazonS3Client client bucket-name]
   (.deleteBucket client bucket-name))
@@ -101,9 +101,9 @@
 (defn exists?-bucket [^AmazonS3Client client bucket-name]
   "## (exists?-bucket client \"my-awesome-bucket\")
 
-  Checks if bucket exists.
+  Checks if bucket `bucket-name` exists.
 
-  Returns true or false
+  Returns `true` or `false`.
   "
   (.doesBucketExist client bucket-name))
 
@@ -137,7 +137,7 @@
     :http-expires-date      - when the content expires, used in cache headers (e.g. Sun, 7 May 1995 12:45:26 GMT).
 
 
-  map can also contain other keys which are added as custom headers for the file.
+  The map can also contain other keys which are added as custom headers for the file.
 
   "
   [^AmazonS3Client client bucket-name object-key ^InputStream is options]
@@ -154,9 +154,9 @@
 (defn get-object
   "## (get-object client \"my-awesome-bucket\" \"my-awesome-me.txt\")
 
-  Fetch object from given bucket with the key, which contains object metadata and an InputStream.
+  Fetches the object from bucket `bucket-name` with the key `object-key`. Metadata and content (input stream) are included.
 
-  If not found returns nil.
+  Returns `nil` if the object is not found.
 
   "
   [^AmazonS3Client client bucket-name object-key]
@@ -169,7 +169,7 @@
 (defn delete-object
   "## (delete-object client \"my-awesome-bucket\" \"my-awesome-me.txt\")
 
-  Destroys object from given bucket with the key.
+  Destroys the object `object-key` from bucket `bucket-name`.
 
   "
   [^AmazonS3Client client bucket-name object-key]
