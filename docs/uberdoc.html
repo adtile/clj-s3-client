@@ -2865,7 +2865,7 @@ net.brehaut.ClojureTools = (function (SH) {
     build_tree: build_tree
   };
 })(SyntaxHighlighter);
-</script><title>clj-s3-client -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/adtile/clj-s3-client">clj-s3-client</a></h1><h2 class="project-version">0.1.0</h2><br /><p>Clojure AWS s3 client</p>
+</script><title>clj-s3-client -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="https://github.com/adtile/clj-s3-client">clj-s3-client</a></h1><h2 class="project-version">1.0.0</h2><br /><p>Clojure AWS s3 client</p>
 </div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.8.0</td></tr><tr><td class="dep-name">camel-snake-kebab</td><td class="dotted"><hr /></td><td class="dep-version">0.4.0</td></tr><tr><td class="dep-name">com.amazonaws/aws-java-sdk-s3</td><td class="dotted"><hr /></td><td class="dep-version">1.11.75</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#clj-s3-client.core">clj-s3-client.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#clj-s3-client.core" name="clj-s3-client.core"><h1 class="project-name">clj-s3-client.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>Functions to interact with Amazon S3 storage.</p>
 
 <p>  All functions take AmazonS3Client instance as the first parameter.</p>
@@ -2952,12 +2952,12 @@ net.brehaut.ClojureTools = (function (SH) {
 <p>  Deletes the bucket <code>bucket-name</code>.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn delete-bucket
   [^AmazonS3Client client bucket-name]
-  (.deleteBucket client bucket-name))</pre></td></tr><tr><td class="docs"><h2>(exists?-bucket client "my-awesome-bucket")</h2>
+  (.deleteBucket client bucket-name))</pre></td></tr><tr><td class="docs"><h2>(bucket-exists? client "my-awesome-bucket")</h2>
 
 <p>  Checks if bucket <code>bucket-name</code> exists.</p>
 
 <p>  Returns <code>true</code> or <code>false</code>.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn exists?-bucket
+</td><td class="codes"><pre class="brush: clojure">(defn bucket-exists?
   [^AmazonS3Client client bucket-name]
   (.doesBucketExist client bucket-name))</pre></td></tr><tr><td class="docs"><h2>(put-object client "my-awesome-bucket" "my-awesome-me.txt" file-input-stream {:acl :private :content-length 1234 :content-type "text/html"})</h2>
 
@@ -3022,7 +3022,7 @@ net.brehaut.ClojureTools = (function (SH) {
 <p>  However, depending on the permissions it might or might not work.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn bucket-name-and-object-key-&gt;url
   [^AmazonS3Client client bucket-name object-key]
-  (.toString (.getUrl client bucket-name object-key)))</pre></td></tr><tr><td class="docs"><h2>(url->bucketname-and-object-key "my-awesome-bucket" "my-awesome-me.txt")</h2>
+  (str (.getUrl client bucket-name object-key)))</pre></td></tr><tr><td class="docs"><h2>(url->bucketname-and-object-key "my-awesome-bucket" "my-awesome-me.txt")</h2>
 
 <p>  Returns the bucket-name and object-key of <code>url</code> as a map.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn url-&gt;bucket-name-and-object-key
