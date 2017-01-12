@@ -3,11 +3,21 @@
             [camel-snake-kebab.extras :refer [transform-keys]]
             [clojure.set :refer [difference]])
   (:import [com.amazonaws.services.s3 AmazonS3Client]
-           [com.amazonaws.services.s3.model AmazonS3Exception ObjectMetadata]
+           [com.amazonaws.services.s3.model CannedAccessControlList PutObjectRequest AmazonS3Exception ObjectMetadata]
            [com.amazonaws ClientConfiguration]
            [com.amazonaws.regions Regions]
            [java.io InputStream]
            [java.nio ByteBuffer]))
+
+(defn- acl->access-control-list [acl]
+  (get {:private CannedAccessControlList/Private
+        :public-read CannedAccessControlList/PublicRead
+        :public-read-write CannedAccessControlList/PublicReadWrite
+        :aws-exec-read CannedAccessControlList/AwsExecRead
+        :authenticated-read CannedAccessControlList/AuthenticatedRead
+        :bucket-owner-read CannedAccessControlList/BucketOwnerRead
+        :bucket-owner-full-control CannedAccessControlList/BucketOwnerFullControl
+        :log-delivery-write CannedAccessControlList/LogDeliveryWrite} acl CannedAccessControlList/Private))
 
 (defn create-client [& {:keys [max-connections max-error-retry endpoint region tcp-keep-alive]
                         :or {max-connections 50 max-error-retry 1 tcp-keep-alive false}}]
@@ -52,10 +62,15 @@
       object-metadata
       (conj specific-setters user-metadata-setter))))
 
-(defn put-object [^AmazonS3Client client bucket-name object-key ^InputStream is metadata]
-  (let [s3-object-metadata (map->object-metadata metadata)
-        put-object-response (.putObject client bucket-name object-key is s3-object-metadata)
-        result-s3-object-metadata (object-metadata->map (.getMetadata put-object-response))]
+(defn put-object [^AmazonS3Client client bucket-name object-key ^InputStream is options]
+  (let [metadata (dissoc options :acl)
+        acl (:acl options)
+        s3-object-metadata (map->object-metadata metadata)
+        put-object-req (.withCannedAcl
+                          (PutObjectRequest. bucket-name object-key is s3-object-metadata)
+                          (acl->access-control-list acl))
+        put-object-resp (.putObject client put-object-req)
+        result-s3-object-metadata (object-metadata->map (.getMetadata put-object-resp))]
     (assoc result-s3-object-metadata :object-key object-key :bucket-name bucket-name :content is)))
 
 (defn- suppress-not-found-exception [exception]
@@ -71,5 +86,4 @@
 
 (defn delete-object [^AmazonS3Client client bucket-name object-key]
   (.deleteObject client bucket-name object-key))
-
 
