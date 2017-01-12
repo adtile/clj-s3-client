@@ -16,11 +16,11 @@
 (use-fixtures :each clean-after-test)
 
 (defn- ->metadata [& {:keys [content-type content-length custom-header content-encoding acl]
-                    :or {content-type "text/plain"
-                         content-length 7
-                         custom-header "cats"
-                         content-encoding "text"
-                         acl :public-read}}]
+                      :or {content-type "text/plain"
+                           content-length 7
+                           custom-header "cats"
+                           content-encoding "text"
+                           acl :public-read}}]
   {:content-type content-type
    :content-length content-length
    :custom-header custom-header
