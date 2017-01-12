@@ -1,4 +1,4 @@
-(defproject clj-s3-client "1.0.0"
+(defproject clj-s3-client "0.1.0"
   :description "Clojure AWS s3 client"
   :url "https://github.com/adtile/clj-s3-client"
   :license {:name "Eclipse Public License"

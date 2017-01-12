@@ -28,8 +28,16 @@ A minimalistic Clojure wrapper for AWS s3 client.
 
 ```
 
+## Release
+
+```bash
+
+lein deploy clojars
+
+```
+
 ## License
 
-Copyright © 2016 Adtile Technologies Inc.
+Copyright © 2017 Adtile Technologies Inc.
 
 Distributed under the Eclipse Public License version 1.0.
